@@ -11,40 +11,42 @@
 #include "obj.h"
 
 
-std::obj processInput(std::netlist net, std::obj input) {
-	std::obj newInput;
+std::obj processOp(std::netlist net, std::operation op) {
+	std::obj newOp;
+	//add critical path op
 
-	for (auto& ops : net.operations) {
-		std::cout << ops.getType() << ": " << std::endl;
-		for (auto& ins : ops.inputs) {
-			std::cout << ins->name << std::endl;
-			if (input.name.compare(ins->name) == 0) {
-				newInput = *ops.output;
-				std::cout << "NEW INPUT: " << newInput.name << std::endl;
-				return newInput;
-			}
-		}
-	}
+
+	newOp = *op.output;
+	std::cout << "NEW INPUT: " << newOp.name << std::endl;
+	return newOp;
+
 
 }
 
 double getCritPath(std::netlist net) {
 	bool done = false;
-	std::obj newInput;
+	std::obj newOp;
 
-	for (auto& o : net.inputs) {
-		std::cout << "INPUT NAME: " << o.name << std::endl;
-		done = false;
-		newInput = o;
-		while (done != true) {
-			newInput = processInput(net, newInput);
-			for (auto& outs : net.outputs) {
-				if (outs.name.compare(newInput.name) == 0) {
-					std::cout << "WE FINISHED, Output: " << newInput.name << std::endl;
-					done = true;
+	for (auto& in : net.inputs) {
+		std::cout << "INPUT NAME: " << in.name << std::endl;
+		for (auto& ops : net.operations) {
+			std::cout << ops.getType() << ": " << std::endl;
+			for (auto& opIn : ops.inputs) {
+				if (opIn->name.compare(in.name))
+				{
+					done = false;
+					while (done != true) {
+						newOp = processOp(net, newOp);
+						for (auto& outs : net.outputs) {
+							if (outs.name.compare(newOp.output->name) == 0) {
+								std::cout << "WE FINISHED, Output: " << newOp.output->name << std::endl;
+								done = true;
+							}
+						}
+
+					}
 				}
 			}
-			
 		}
 	}
 
